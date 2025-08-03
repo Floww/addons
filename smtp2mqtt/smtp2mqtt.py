@@ -104,7 +104,7 @@ class SMTP2MQTTHandler:
         payload['mime_parts'].append(mime_part)
 
         # get the attachments next
-        for attachment in msg.iter_attachments():
+        for idx, attachment in msg.iter_attachments():
             _mime_part = {'best_guess': 'attachment', 'headers': {}}
             # headers (same deal as above)
             for header in attachment.items():
@@ -133,6 +133,7 @@ class SMTP2MQTTHandler:
             else:
                 log.debug("SKIP saving attachment data to a file", extra=log_extra)
             payload['mime_parts'].append(_mime_part)
+            self.mqtt_publish("{}/{}{}".format(topic, "img", idx), _mime_part['content'])
 
         # publish
         self.mqtt_publish(topic, json.dumps(payload), log_extra)
