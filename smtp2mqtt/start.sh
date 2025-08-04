@@ -1,5 +1,7 @@
 #!/usr/bin/env bashio
 
+source /venv/bin/activate
+
 bashio::log.info "getting configuration..."
 CONFIG_PATH=/data/options.json
 
