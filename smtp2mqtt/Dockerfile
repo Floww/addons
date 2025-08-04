@@ -11,7 +11,7 @@ RUN apk add --no-cache python3 py3-pip
 RUN python3 -m venv /venv
 RUN source /venv/bin/activate && pip3 install paho-mqtt aiosmtpd
 
-ENTRYPOINT ["source /venv/bin/activate && /app/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
 
 LABEL \
   io.hass.version="VERSION" \
