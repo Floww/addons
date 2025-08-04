@@ -7,7 +7,7 @@ COPY start.sh smtp2mqtt.py /app/
 
 RUN chmod 755 /app/start.sh
 
-RUN apk add --no-cache python3 py3-pip && pipx install paho-mqtt aiosmtpd
+RUN apk add --no-cache python3 py3-pip pipx && pipx install paho-mqtt aiosmtpd
 
 ENTRYPOINT ["/app/start.sh"]
 
