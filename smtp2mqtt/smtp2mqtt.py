@@ -161,7 +161,8 @@ class SMTP2MQTTHandler:
                 auth={
                     "username": config["MQTT_USER"],
                     "password": config["MQTT_PASS"],
-                }
+                },
+                retain=True
                 if config["MQTT_USER"]
                 else None,
             )
