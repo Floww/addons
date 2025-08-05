@@ -80,35 +80,35 @@ class SMTP2MQTTHandler:
         )
         
         # payload is split into two - headers and mime_parts
-        payload = {'uuid': log_extra['uuid'], 'headers': {}, 'mime_parts': []}
+        payload = {"uuid": log_extra['uuid'], "headers": {}, "mime_parts": []}
 
         # add all the headers to the payload (normalize the header name to lower-case)
         # *we're ignoring that one header may have multiple values, technically we're going
         # to overwrite successively, but it's ok, we're not really that picky about the headers...
         for header in msg.items():
-            payload['headers'][header[0].lower()] = header[1]
+            payload["headers"][header[0].lower()] = header[1]
             if (log.isEnabledFor(logging.DEBUG)): log.debug("got message header %s: %s", header[0], header[1], extra=log_extra)
         
         #get the message body
         msgBody = msg.get_body()
-        mime_part = {'best_guess': 'message body', 'headers': {}}
+        mime_part = {"best_guess": "message body", "headers": {}}
         # headers (same deal as above)
         for header in msgBody.items():
-            mime_part['headers'][header[0].lower()] = header[1]
+            mime_part["headers"][header[0].lower()] = header[1]
             if (log.isEnabledFor(logging.DEBUG)): log.debug("got body header %s: %s", header[0], header[1], extra=log_extra)
         try:
-            mime_part['content'] = msgBody.get_content()
+            mime_part["content"] = msgBody.get_content()
         except:
-            mime_part['content'] = ""
+            mime_part["content"] = ""
         if (log.isEnabledFor(logging.DEBUG)): log.debug("stored [%s] as the content", mime_part['content'], extra=log_extra)
         payload['mime_parts'].append(mime_part)
 
         # get the attachments next
         for idx, attachment in enumerate(msg.iter_attachments()):
-            _mime_part = {'best_guess': 'attachment', 'headers': {}}
+            _mime_part = {"best_guess": "attachment", "headers": {}}
             # headers (same deal as above)
             for header in attachment.items():
-                _mime_part['headers'][header[0].lower()] = header[1]
+                _mime_part["headers"][header[0].lower()] = header[1]
                 if (log.isEnabledFor(logging.DEBUG)): log.debug("got attachment header %s: %s", header[0], header[1], extra=log_extra)
             # only include the data if configured to!
             if (config["PUBLISH_ATTACHMENTS"]):
@@ -116,11 +116,11 @@ class SMTP2MQTTHandler:
                 # the content-type and content-transfer-encoding headers would tell someone how
                 # to decode it, it is courteous to just normalize it to one, specific, well-known
                 # encoding and be done with it.
-                _mime_part['content'] = base64.b64encode(attachment.get_content()).decode("utf8", errors="replace")
+                _mime_part["content"] = base64.b64encode(attachment.get_content()).decode("utf8", errors="replace")
                 if (log.isEnabledFor(logging.DEBUG)): log.debug("stored [%s] as the content", _mime_part['content'], extra=log_extra)
             else:
                 log.debug("SKIP publish attachment data", extra=log_extra)
-                _mime_part['content'] = "<not configured to publish attachment data>"
+                _mime_part["content"] = "<not configured to publish attachment data>"
             # save the attachment, if we are supposed to
             if (config["SAVE_ATTACHMENTS_DIR"]):
                 filename = f"{log_extra['uuid']}_{attachment.get_filename()}"
@@ -129,11 +129,11 @@ class SMTP2MQTTHandler:
                 with open(file_path, "wb") as f:
                     f.write(attachment.get_content())
                 # note the file name in the payload
-                _mime_part['saved_file_name'] = file_path
+                _mime_part["saved_file_name"] = file_path
             else:
                 log.debug("SKIP saving attachment data to a file", extra=log_extra)
-            payload['mime_parts'].append(_mime_part)
-            self.mqtt_publish("{}/{}{}".format(topic, "img", idx), _mime_part['content'], log_extra)
+            payload["mime_parts"].append(_mime_part)
+            self.mqtt_publish("{}/{}{}".format(topic, "img", idx), _mime_part["content"], log_extra)
 
         # publish
         self.mqtt_publish(topic, json.dumps(payload), log_extra)
