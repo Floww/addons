@@ -133,7 +133,7 @@ class SMTP2MQTTHandler:
             else:
                 log.debug("SKIP saving attachment data to a file", extra=log_extra)
             payload['mime_parts'].append(_mime_part)
-            self.mqtt_publish("{}/{}{}".format(topic, "img", idx), _mime_part['content'])
+            self.mqtt_publish("{}/{}{}".format(topic, "img", idx), _mime_part['content'], log_extra)
 
         # publish
         self.mqtt_publish(topic, json.dumps(payload), log_extra)
