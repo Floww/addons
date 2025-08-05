@@ -104,7 +104,7 @@ class SMTP2MQTTHandler:
         payload['mime_parts'].append(mime_part)
 
         # get the attachments next
-        for idx, attachment in msg.iter_attachments():
+        for idx, attachment in enumerate(msg.iter_attachments()):
             _mime_part = {'best_guess': 'attachment', 'headers': {}}
             # headers (same deal as above)
             for header in attachment.items():
