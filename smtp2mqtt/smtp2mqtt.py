@@ -21,12 +21,6 @@ from paho.mqtt import publish
 defaults = {
     "SMTP_LISTEN_PORT": "25",
     "SMTP_AUTH_REQUIRED": "False",
-    "SMTP_RELAY_HOST": None,
-    "SMTP_RELAY_PORT": None,
-    "SMTP_RELAY_USER": None,
-    "SMTP_RELAY_PASS": None,
-    "SMTP_RELAY_STARTTLS": None,
-    "SMTP_RELAY_TIMEOUT_SECS": None,
     "MQTT_HOST": "localhost",
     "MQTT_PORT": None,
     "MQTT_USER": None,
@@ -138,12 +132,6 @@ class SMTP2MQTTHandler:
         # publish
         self.mqtt_publish(topic, json.dumps(payload), log_extra)
 
-        # go ahead & send the original message on its way (if configured to)
-        if (config["SMTP_RELAY_HOST"]):
-            self.smtp_relay(msg, envelope.mail_from, envelope.rcpt_tos, log_extra)
-        else:
-            log.debug("SKIP relaying the original email", extra=log_extra)
-
         # done!
         return "250 Message accepted for delivery"
 
@@ -168,23 +156,6 @@ class SMTP2MQTTHandler:
             )
         except Exception as e:
             log.exception("Failed publishing", extra=log_extra)
-    
-    def smtp_relay(self, msg, mail_from, rcpt_tos, log_extra):
-        log.info("Relaying the original email", extra=log_extra)
-        with smtplib.SMTP(
-            host=config["SMTP_RELAY_HOST"],
-            port=int(config["SMTP_RELAY_PORT"]) if config["SMTP_RELAY_PORT"] else 25,
-            timeout=int(config["SMTP_RELAY_TIMEOUT_SECS"]) if config["SMTP_RELAY_TIMEOUT_SECS"] else 10
-        ) as relay:
-            try:
-                if (config["SMTP_RELAY_STARTTLS"]):
-                    relay.starttls()
-                    relay.ehlo()
-                if (config["SMTP_RELAY_USER"]):
-                    relay.login(user=config["SMTP_RELAY_USER"], password=config["SMTP_RELAY_PASS"])
-                relay.send_message(msg, mail_from, rcpt_tos)
-            except Exception as e:
-                log.exception("Failed relaying", extra=log_extra)
 
     def set_quit(self, *args):
         log.info("Quitting...", extra={'uuid': 'main thread'})
